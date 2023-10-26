@@ -22,7 +22,7 @@ app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
-app.use(require("./routes/index"));
+app.use(require("./routes/index2"));
 
 // Static files
 app.use("/public", express.static(path.join(__dirname, "public")));
