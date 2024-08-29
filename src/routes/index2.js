@@ -2,67 +2,59 @@ const express = require('express');
 const router = express.Router();
 const db = require('../mysql'); // Importa la conexión a la base de datos MySQL
 
-// Consulta todos los elementos en MySQL y renderiza la vista
+// Función para manejar errores de la base de datos
+const handleDatabaseError = (error, res) => {
+    console.error(error);
+    res.status(500).send('Error en el servidor.');
+};
+
+// Ruta para consultar todos los elementos y renderizar la vista
 router.get('/', (req, res) => {
-    db.query('SELECT * FROM admin', (error, results) => {
-        if (error) {
-            console.error(error);
-        } else {
-            res.render('index', { contacts: results });
-        }
+    const query = 'SELECT * FROM admin';
+    db.query(query, (error, results) => {
+        if (error) return handleDatabaseError(error, res);
+        res.render('index', { contacts: results });
     });
 });
 
-// Inserta un nuevo contacto en MySQL
+// Ruta para insertar un nuevo contacto
 router.post('/new-contact', (req, res) => {
     const { firstname, lastname, email, phone } = req.body;
-    const insertQuery = 'INSERT INTO admin (firstname, lastname, email, phone) VALUES (?, ?, ?, ?)';
-    db.query(insertQuery, [firstname, lastname, email, phone], (error, result) => {
-        if (error) {
-            console.error(error);
-        } else {
-            res.redirect('/');
-        }
+    const query = 'INSERT INTO admin (firstname, lastname, email, phone) VALUES (?, ?, ?, ?)';
+    db.query(query, [firstname, lastname, email, phone], (error) => {
+        if (error) return handleDatabaseError(error, res);
+        res.redirect('/');
     });
 });
 
-// Elimina un contacto en MySQL por email
+// Ruta para eliminar un contacto por email
 router.get('/delete-contact/:email', (req, res) => {
-    const email = req.params.email;
-    const deleteQuery = 'DELETE FROM admin WHERE email = ?';
-    db.query(deleteQuery, [email], (error, result) => {
-        if (error) {
-            console.error(error);
-        } else {
-            res.redirect('/');
-        }
+    const { email } = req.params;
+    const query = 'DELETE FROM admin WHERE email = ?';
+    db.query(query, [email], (error) => {
+        if (error) return handleDatabaseError(error, res);
+        res.redirect('/');
     });
 });
 
-// Edita un contacto en MySQL por email
+// Ruta para editar un contacto por email
 router.get('/edit-contact/:email', (req, res) => {
-    const email = req.params.email;
-    const selectQuery = 'SELECT * FROM admin WHERE email = ?';
-    db.query(selectQuery, [email], (error, results) => {
-        if (error) {
-            console.error(error);
-        } else {
-            res.render('index', { contact: results[0] });
-        }
+    const { email } = req.params;
+    const query = 'SELECT * FROM admin WHERE email = ?';
+    db.query(query, [email], (error, results) => {
+        if (error) return handleDatabaseError(error, res);
+        res.render('index', { contact: results[0] });
     });
 });
 
-// Actualiza un contacto en MySQL por email
+// Ruta para actualizar un contacto por email
 router.post('/update-contact/:email', (req, res) => {
     const { firstname, lastname, phone } = req.body;
-    const email = req.params.email;
-    const updateQuery = 'UPDATE admin SET firstname = ?, lastname = ?, phone = ? WHERE email = ?';
-    db.query(updateQuery, [firstname, lastname, phone, email], (error, result) => {
-        if (error) {
-            console.error(error);
-        } else {
-            res.redirect('/');
-        }
+    const { email } = req.params;
+    const query = 'UPDATE admin SET firstname = ?, lastname = ?, phone = ? WHERE email = ?';
+    db.query(query, [firstname, lastname, phone, email], (error) => {
+        if (error) return handleDatabaseError(error, res);
+        res.redirect('/');
     });
 });
 
